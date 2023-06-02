@@ -1,4 +1,4 @@
-use askme_memorize::AskMeContent;
+use askme_memorize::{raise_user_err, AskMeContent};
 use std::fs::File;
 use std::io::Read;
 
@@ -11,7 +11,13 @@ pub fn parse_file(filename: &String) -> AskMeContent {
     let askme_file = serde_yaml::from_str(&file_content);
     let askme_file: AskMeContent = match askme_file {
         Ok(file_struct) => file_struct,
-        Err(error) => panic!("Failed to parse file: {:?}", error),
+        Err(error) => {
+            raise_user_err(&format!(
+                "Failed to parse file!\nError message: {:?}",
+                error
+            ));
+            panic!()
+        }
     };
     askme_file
 }

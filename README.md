@@ -40,3 +40,10 @@ questions:
 git clone 'https://github.com/DaringCuteSeal/askme-rs.git' askme-rs
 make
 ```
+
+# Contributing & To-Do's
+I appreciate contributions! Feel free to fork this repo and make PRs.
+
+To-do's:
+- [ ] Handle TERM signal properly (print correct answers on termination)
+- [ ] Handle errors properly
