@@ -46,6 +46,6 @@ make
 I appreciate contributions! Feel free to fork this repo and make PRs.
 
 To-do's:
-- [ ] Handle TERM signal properly (print correct answers on termination)
+- [ ] Handle INT signal properly (print correct answers on termination)
 - [ ] Handle errors properly
 - [ ] Don't force all fields to be declared
