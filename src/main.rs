@@ -13,11 +13,13 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let askme_content = yaml_parser::parse_file(&args.filename);
+    let mut askme_content = yaml_parser::parse_file(&args.filename);
+    let mut rng = rand::thread_rng();
     let mut app = App {
-        askme_content: &askme_content,
+        askme_content: &mut askme_content,
         q_index: 0,
         correct_count: 0,
+        rng: &mut rng,
     };
 
     app.main_loop();

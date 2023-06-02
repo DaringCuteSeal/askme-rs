@@ -1,5 +1,6 @@
 use colored::*;
 use figlet_rs::FIGfont;
+use rand::{rngs::ThreadRng, Rng};
 use serde::Deserialize;
 use std::{
     io::{self, Write},
@@ -11,19 +12,29 @@ const INCORRECT_FEEDBACK_STR: &str = "❌ Not quite correct..";
 
 #[derive(Deserialize)]
 pub struct Question {
-    pub title: String,
-    pub answers: Vec<String>,
+    pub title: String,        // Question title
+    pub answers: Vec<String>, // List of answers
 }
 
 #[derive(Deserialize)]
 pub struct AskMeContent {
-    pub title: String,
-    pub subtitle: String,
-    pub shuffle: bool,
-    pub loop_questions: bool,
-    pub case_sensitive: bool,
-    pub show_correct: bool,
-    pub questions: Vec<Question>,
+    pub title: String,            // Question title
+    pub subtitle: String,         // Question subtitle
+    pub shuffle: bool,            // Shuffle questions ordering?
+    pub loop_questions: bool,     // Loop questions?
+    pub case_sensitive: bool,     // Use case sensitive comparison?
+    pub show_correct: bool,       // Show correct answer if user incorrectly answered the question?
+    pub questions: Vec<Question>, // List of questions
+}
+
+/** Fisher-Yates shuffling. */
+pub fn shuffle_arr<T>(array: &mut [T]) {
+    let mut arr_remaining_len = array.len();
+    let mut rng = rand::thread_rng();
+    while arr_remaining_len > 1 {
+        array.swap(arr_remaining_len - 1, rng.gen_range(0..arr_remaining_len));
+        arr_remaining_len -= 1;
+    }
 }
 
 pub fn raise_user_err(message: &str) {
@@ -43,9 +54,10 @@ pub fn read_user_input() -> String {
     }
 }
 pub struct App<'a> {
-    pub askme_content: &'a AskMeContent,
+    pub askme_content: &'a mut AskMeContent,
     pub q_index: usize,
     pub correct_count: i32,
+    pub rng: &'a mut ThreadRng,
 }
 
 impl App<'_> {
@@ -61,7 +73,7 @@ impl App<'_> {
     }
 
     pub fn print_subtitle(&self) {
-        println!(" {}", self.askme_content.subtitle.blue());
+        println!(" {}\n", self.askme_content.subtitle.blue());
     }
 
     pub fn print_question(&self) {
@@ -115,7 +127,14 @@ impl App<'_> {
 
         /* Check answer */
         for answer in &self.askme_content.questions[self.q_index].answers {
-            if *user_answer.trim() == *answer.to_lowercase() {
+            let tmp_answer = &mut String::new();
+            if !self.askme_content.case_sensitive {
+                *tmp_answer = answer.to_lowercase();
+            } else {
+                *tmp_answer = (&answer).to_string();
+            }
+
+            if *user_answer.trim() == *tmp_answer {
                 println!("{}\n", CORRECT_FEEDBACK_STR.green());
                 self.correct_count += 1;
                 tmp_is_correct = true;
@@ -128,13 +147,16 @@ impl App<'_> {
             }
         }
 
-        if self.q_index + 1 == self.askme_content.questions.len()
-            && self.askme_content.loop_questions
-        {
-            self.q_index = 0; // Go back to index 0 if we are looping
-        }
-
         self.q_index += 1;
+
+        if self.askme_content.loop_questions {
+            if self.askme_content.shuffle {
+                self.q_index = self.rng.gen_range(0..self.askme_content.questions.len())
+            }
+            if self.q_index == self.askme_content.questions.len() {
+                self.q_index = 0; // Go back to index 0 if we are looping
+            }
+        }
     }
 
     pub fn main_loop(&mut self) {
@@ -156,6 +178,9 @@ impl App<'_> {
                 self.ask_question_routine();
             }
         } else {
+            if self.askme_content.shuffle {
+                shuffle_arr(&mut self.askme_content.questions);
+            }
             while self.q_index < self.askme_content.questions.len() {
                 self.ask_question_routine();
             }
