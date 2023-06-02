@@ -1,7 +1,9 @@
+use async_std::task;
 use colored::*;
 use figlet_rs::FIGfont;
 use rand::{rngs::ThreadRng, Rng};
 use serde::Deserialize;
+use std::time::Duration;
 use std::{
     io::{self, Write},
     process::exit,
@@ -24,6 +26,7 @@ pub struct AskMeContent {
     pub loop_questions: bool,     // Loop questions?
     pub case_sensitive: bool,     // Use case sensitive comparison?
     pub show_correct: bool,       // Show correct answer if user incorrectly answered the question?
+    pub wait_duration: f64,       // Duration to wait before switching to the next question
     pub questions: Vec<Question>, // List of questions
 }
 
@@ -37,18 +40,23 @@ pub fn shuffle_arr<T>(array: &mut [T]) {
     }
 }
 
+pub async fn wait_for(duration: Duration) {
+    task::sleep(duration).await;
+}
+/** Print human-readable error to user */
 pub fn raise_user_err(message: &str) {
     println!("{}", format!("{}{}", "ERROR: ", message).red());
     exit(1);
 }
 
+/** Get user input with prompt */
 pub fn read_user_input() -> String {
     loop {
         print!("> ");
         let mut user_input = String::new();
         io::stdout().flush().unwrap();
         io::stdin().read_line(&mut user_input).unwrap();
-        if !user_input.is_empty() {
+        if !user_input.trim().is_empty() {
             break user_input;
         }
     }
@@ -84,6 +92,30 @@ impl App<'_> {
         self.askme_content.questions.is_empty()
     }
 
+    fn check_answer(&mut self, user_answer: String) {
+        let mut tmp_is_correct = false;
+        for answer in &self.askme_content.questions[self.q_index].answers {
+            let tmp_answer = &mut String::new();
+            if !self.askme_content.case_sensitive {
+                *tmp_answer = answer.to_lowercase();
+            } else {
+                *tmp_answer = (&answer).to_string();
+            }
+
+            if *user_answer.trim() == *tmp_answer {
+                println!("{}\n", CORRECT_FEEDBACK_STR.green());
+                self.correct_count += 1;
+                tmp_is_correct = true;
+            }
+        }
+        if !tmp_is_correct {
+            println!("{}\n", INCORRECT_FEEDBACK_STR.red());
+            if self.askme_content.show_correct {
+                self.print_answers();
+            }
+        }
+    }
+
     pub fn print_answers(&self) {
         let answers = &self.askme_content.questions[self.q_index].answers;
         if answers.len() > 1 {
@@ -111,7 +143,24 @@ impl App<'_> {
             .bright_purple()
         )
     }
-    pub fn ask_question_routine(&mut self) {
+
+    fn index_change_loop(&mut self) {
+        /* If shuffle is enabled, we get a random index from our questions
+        vector instead of wrapping back to 0 when there are no questions left. */
+        if self.askme_content.shuffle {
+            self.q_index = self.rng.gen_range(0..self.askme_content.questions.len())
+        }
+        if self.q_index == self.askme_content.questions.len() {
+            self.q_index = 0; // Go back to index 0 if we are looping
+        }
+    }
+
+    async fn delay_question(&self) {
+        let duration = Duration::from_secs_f64(self.askme_content.wait_duration);
+        wait_for(duration).await;
+    }
+
+    pub async fn ask_question_routine(&mut self) {
         /* Print question */
         self.print_question();
 
@@ -123,43 +172,21 @@ impl App<'_> {
             user_answer = user_answer.to_lowercase();
         }
 
-        let mut tmp_is_correct = false;
-
         /* Check answer */
-        for answer in &self.askme_content.questions[self.q_index].answers {
-            let tmp_answer = &mut String::new();
-            if !self.askme_content.case_sensitive {
-                *tmp_answer = answer.to_lowercase();
-            } else {
-                *tmp_answer = (&answer).to_string();
-            }
+        self.check_answer(user_answer);
 
-            if *user_answer.trim() == *tmp_answer {
-                println!("{}\n", CORRECT_FEEDBACK_STR.green());
-                self.correct_count += 1;
-                tmp_is_correct = true;
-            }
-        }
-        if !tmp_is_correct {
-            println!("{}\n", INCORRECT_FEEDBACK_STR.red());
-            if self.askme_content.show_correct {
-                self.print_answers();
-            }
-        }
-
+        /* Increment index */
         self.q_index += 1;
 
+        /* When are looping, either wrap back to index 0 or get a random index */
         if self.askme_content.loop_questions {
-            if self.askme_content.shuffle {
-                self.q_index = self.rng.gen_range(0..self.askme_content.questions.len())
-            }
-            if self.q_index == self.askme_content.questions.len() {
-                self.q_index = 0; // Go back to index 0 if we are looping
-            }
+            self.index_change_loop();
         }
+
+        self.delay_question().await;
     }
 
-    pub fn main_loop(&mut self) {
+    pub async fn main_loop(&mut self) {
         self.q_index = 0;
 
         if self.check_for_empty_questions() {
@@ -175,14 +202,15 @@ impl App<'_> {
         /* Start the loop */
         if self.askme_content.loop_questions {
             loop {
-                self.ask_question_routine();
+                self.ask_question_routine().await;
             }
         } else {
             if self.askme_content.shuffle {
+                /* Shuffle the vector first */
                 shuffle_arr(&mut self.askme_content.questions);
             }
             while self.q_index < self.askme_content.questions.len() {
-                self.ask_question_routine();
+                self.ask_question_routine().await;
             }
         }
 

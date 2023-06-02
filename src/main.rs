@@ -4,14 +4,14 @@ mod yaml_parser;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-
 struct Args {
     /// AskMe file
     #[arg()]
     filename: String,
 }
 
-fn main() {
+#[async_std::main]
+async fn main() {
     let args = Args::parse();
     let mut askme_content = yaml_parser::parse_file(&args.filename);
     let mut rng = rand::thread_rng();
@@ -22,5 +22,5 @@ fn main() {
         rng: &mut rng,
     };
 
-    app.main_loop();
+    app.main_loop().await;
 }
