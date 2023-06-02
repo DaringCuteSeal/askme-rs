@@ -4,7 +4,7 @@ Rewrite of [AskMe](https://github.com/DaringCuteSeal/askme) in Rust.
 AskMe is a simple utility to help with memorizing terms, definitions, etc. AskMe files are written in [yaml](https://yaml.org/).
 
 # Usage
-`askme-rs <file>`
+`askme-memorize <file>`
 
 ![Demo](demo.png)
 
