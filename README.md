@@ -6,7 +6,7 @@ AskMe is a simple utility to help with memorizing terms, definitions, etc. AskMe
 # Usage
 `askme-rs <file>`
 
-![Demo](README.md)
+![Demo](demo.png)
 
 
 ## Writing AskMe Files
