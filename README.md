@@ -38,6 +38,7 @@ questions:
 # Building & Installing
 ```sh
 git clone 'https://github.com/DaringCuteSeal/askme-rs.git' askme-rs
+cd askme-rs
 make
 ```
 
