@@ -4,8 +4,8 @@ subtitle: My question subtitle
 wait_duration: 1.0 # How long to wait before switching question
 shuffle: false # Shuffle questions?
 show_correct: true # Show correct answer(s)?
-loop_questions: true # Loop questions?
-case_sensitive: true # Use case sensitive comparison?
+loop_questions: false # Loop questions?
+case_sensitive: false # Use case sensitive comparison?
 
 questions:
   - title: S
