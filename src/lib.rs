@@ -1,8 +1,8 @@
-use async_std::task;
 use colored::*;
 use figlet_rs::FIGfont;
 use rand::{rngs::ThreadRng, Rng};
 use serde::Deserialize;
+use std::thread::sleep;
 use std::time::Duration;
 use std::{
     io::{self, Write},
@@ -40,8 +40,8 @@ pub fn shuffle_arr<T>(array: &mut [T]) {
     }
 }
 
-pub async fn wait_for(duration: Duration) {
-    task::sleep(duration).await;
+pub fn wait_for(duration: f64) {
+    sleep(Duration::from_secs_f64(duration));
 }
 /** Print human-readable error to user */
 pub fn raise_user_err(message: &str) {
@@ -155,12 +155,11 @@ impl App<'_> {
         }
     }
 
-    async fn delay_question(&self) {
-        let duration = Duration::from_secs_f64(self.askme_content.wait_duration);
-        wait_for(duration).await;
+    fn delay_question(&self) {
+        wait_for(self.askme_content.wait_duration);
     }
 
-    pub async fn ask_question_routine(&mut self) {
+    pub fn ask_question_routine(&mut self) {
         /* Print question */
         self.print_question();
 
@@ -183,10 +182,10 @@ impl App<'_> {
             self.index_change_loop();
         }
 
-        self.delay_question().await;
+        self.delay_question();
     }
 
-    pub async fn main_loop(&mut self) {
+    pub fn main_loop(&mut self) {
         self.q_index = 0;
 
         if self.check_for_empty_questions() {
@@ -202,7 +201,7 @@ impl App<'_> {
         /* Start the loop */
         if self.askme_content.loop_questions {
             loop {
-                self.ask_question_routine().await;
+                self.ask_question_routine();
             }
         } else {
             if self.askme_content.shuffle {
@@ -210,7 +209,7 @@ impl App<'_> {
                 shuffle_arr(&mut self.askme_content.questions);
             }
             while self.q_index < self.askme_content.questions.len() {
-                self.ask_question_routine().await;
+                self.ask_question_routine();
             }
         }
 

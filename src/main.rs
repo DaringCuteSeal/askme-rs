@@ -10,8 +10,7 @@ struct Args {
     filename: String,
 }
 
-#[async_std::main]
-async fn main() {
+fn main() {
     let args = Args::parse();
     let mut askme_content = yaml_parser::parse_file(&args.filename);
     let mut rng = rand::thread_rng();
@@ -22,5 +21,5 @@ async fn main() {
         rng: &mut rng,
     };
 
-    app.main_loop().await;
+    app.main_loop();
 }
