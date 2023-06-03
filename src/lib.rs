@@ -12,7 +12,7 @@ use std::{
 const CORRECT_FEEDBACK_STR: &str = "✔️ That's correct!";
 const INCORRECT_FEEDBACK_STR: &str = "❌ Not quite correct..";
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Question {
     pub title: String,        // Question title
     pub answers: Vec<String>, // List of answers
@@ -31,17 +31,27 @@ pub struct AskMeContent {
 }
 
 /** Fisher-Yates shuffling. */
-pub fn shuffle_arr<T>(array: &mut [T]) {
-    let mut arr_remaining_len = array.len();
+// pub fn shuffle_arr<T>(array: &mut [T]) {
+//     let mut arr_remaining_len = array.len();
+//     let mut rng = rand::thread_rng();
+//     while arr_remaining_len > 1 {
+//         array.swap(arr_remaining_len - 1, rng.gen_range(0..arr_remaining_len));
+//         arr_remaining_len -= 1;
+//     }
+// }
+
+pub fn shuffle_arr<T: Clone>(array: &[T]) -> Vec<T> {
+    let mut vec = array.to_vec();
+    let arr_len = vec.len();
     let mut rng = rand::thread_rng();
-    while arr_remaining_len > 1 {
-        array.swap(arr_remaining_len - 1, rng.gen_range(0..arr_remaining_len));
-        arr_remaining_len -= 1;
+    for i in 1..arr_len {
+        vec.swap(arr_len - i, rng.gen_range(0..arr_len - i));
     }
+    vec
 }
 
-pub fn wait_for(duration: f64) {
-    sleep(Duration::from_secs_f64(duration));
+pub fn wait_for(secs: f64) {
+    sleep(Duration::from_secs_f64(secs));
 }
 /** Print human-readable error to user */
 pub fn raise_user_err(message: &str) {
@@ -206,7 +216,7 @@ impl App<'_> {
         } else {
             if self.askme_content.shuffle {
                 /* Shuffle the vector first */
-                shuffle_arr(&mut self.askme_content.questions);
+                self.askme_content.questions = shuffle_arr(&self.askme_content.questions);
             }
             while self.q_index < self.askme_content.questions.len() {
                 self.ask_question_routine();
