@@ -30,16 +30,6 @@ pub struct AskMeContent {
     pub questions: Vec<Question>, // List of questions
 }
 
-/** Fisher-Yates shuffling. */
-// pub fn shuffle_arr<T>(array: &mut [T]) {
-//     let mut arr_remaining_len = array.len();
-//     let mut rng = rand::thread_rng();
-//     while arr_remaining_len > 1 {
-//         array.swap(arr_remaining_len - 1, rng.gen_range(0..arr_remaining_len));
-//         arr_remaining_len -= 1;
-//     }
-// }
-
 pub fn shuffle_arr<T: Clone>(array: &[T]) -> Vec<T> {
     let mut vec = array.to_vec();
     let arr_len = vec.len();
