@@ -1,19 +1,25 @@
-# Sample AskMe question.
-title: My question title
-subtitle: My question subtitle
-wait_duration: 1.0 # How long to wait before switching question
-shuffle: false # Shuffle questions?
-show_correct: true # Show correct answer(s)?
-loop_questions: false # Loop questions?
-case_sensitive: false # Use case sensitive comparison?
+title: The Periodic Table
+subtitle: Answer the element symbols with their corresponding element name.
 
 questions:
-  - title: S
+  - title: H
     answers:
-      - Sulfur
-      - Sulphur
-  
-  - title: W
+      - Hydrogen
+  - title: He
     answers:
-      - Wolfram
-      - Tungsten
+      - Helium
+  - title: Li
+    answers:
+      - Lithium
+  - title: Be
+    answers:
+      - Beryllium
+  - title: B
+    answers:
+      - Boron
+  - title: C
+    answers:
+      - Carbon
+  - title: N
+    answers:
+      - Nitrogen
