@@ -1,4 +1,7 @@
-use askme_memorize::{print_correct_answers, App, Settings};
+mod app;
+
+use app::App;
+use askme::{print_correct_answers, Settings};
 use clap::Parser;
 
 #[derive(Parser, Debug)]
