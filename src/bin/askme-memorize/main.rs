@@ -1,7 +1,7 @@
 mod app;
 
 use app::App;
-use askme::{print_correct_answers, Settings};
+use askme::{print_correct_answers, AskmeSettings};
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -42,9 +42,9 @@ struct Args {
     show_correct: bool,
 }
 
-impl From<Args> for Settings {
+impl From<Args> for AskmeSettings {
     fn from(val: Args) -> Self {
-        Settings {
+        AskmeSettings {
             shuffle: val.shuffle,
             loop_questions: val.loop_questions,
             case_sensitive: val.case_sensitive,

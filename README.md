@@ -3,11 +3,16 @@ Rewrite of [AskMe](https://github.com/DaringCuteSeal/askme) in Rust.
 
 AskMe is a simple utility to help with memorizing terms, definitions, etc. AskMe files are written in [yaml](https://yaml.org/).
 
-# Usage
-`askme-memorize <file>`
 
 ![Demo](demo.png)
 
+# How it works
+
+AskMe has many modes for you to pick from, currently, only `askme-memorize` is properly implemented, and `askme-multichoice` is currently being implemented. This program will have multiple binaries when installed.
+
+# Usage
+
+run `askme-* --help` where * is the askme mode you would like to run, or run it without any arguments to get a usage screen
 
 ## Writing AskMe Files
 Here's an example question file:
@@ -16,11 +21,6 @@ Here's an example question file:
 # Questionnaire configuration
 title: My question title              # Question title (string)
 subtitle: My question subtitle        # Question subtitle (string)
-wait_duration: 1.0                    # How long to wait before switching question (int/float)
-shuffle: false                        # Shuffle questions? (boolean)
-show_correct: true                    # Show correct answer(s)? (boolean)
-loop_questions: false                 # Loop questions? (boolean)
-case_sensitive: true                  # Use case-sensitive comparison? (boolean)
 
 # List of questions
 questions:
@@ -32,6 +32,10 @@ questions:
   - title: W                           # Question title (string)
     answers:                           # List of possible answers
       - Wolfram                        # Answer 1 (string)
+
+  - title: How many valence electrons does sodium have? # Question title (string)
+    answers:                                            # List of possible answers
+      - "1"                                             # Note: all answers must be strings!
 ```
 
 
@@ -47,5 +51,4 @@ I appreciate contributions! Feel free to fork this repo and make PRs.
 
 To-do's:
 - [ ] Handle INT signal properly (print correct answers on termination)
-- [ ] Handle errors properly
 - [ ] Don't force all fields to be declared

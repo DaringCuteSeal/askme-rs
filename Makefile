@@ -1,9 +1,8 @@
 all: add_localbin_to_path build
-
-	cp -i target/release/askme-memorize $(HOME)/.local/bin
+	cp -i target/release/askme-* $(HOME)/.local/bin/
 
 install:
-	cp -i target/release/askme-memorize $(HOME)/.local/bin
+	cp -i target/release/askme-* $(HOME)/.local/bin/
 
 build:
 	cargo build --release
@@ -21,4 +20,4 @@ clean:
 	rm -rvf target/release;
 
 uninstall:
-	rm $(HOME)/.local/bin/askme-memorize;
+	rm $(HOME)/.local/bin/askme-*;

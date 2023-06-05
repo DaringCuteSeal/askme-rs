@@ -7,14 +7,14 @@ const CORRECT_FEEDBACK_STR: &str = "✔️ That's correct!";
 const INCORRECT_FEEDBACK_STR: &str = "❌ Not quite correct..";
 
 pub struct App {
-    pub askme_file: AskmeFile,
-    pub settings: Settings,
+    pub askme_file: AskmeSet,
+    pub settings: AskmeSettings,
     pub correct_count: i32,
     pub rng: ThreadRng,
 }
 
 impl App {
-    pub fn from_file(file_name: &str, settings: Settings) -> Result<Self, String> {
+    pub fn from_file(file_name: &str, settings: AskmeSettings) -> Result<Self, String> {
         let content = match parse_file(file_name) {
             Ok(f) => f,
             Err(e) => return Err(e),

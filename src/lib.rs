@@ -12,7 +12,7 @@ pub struct Question {
     pub answers: Vec<String>, // List of answers
 }
 
-pub struct Settings {
+pub struct AskmeSettings {
     pub shuffle: bool,
     pub loop_questions: bool,
     pub case_sensitive: bool,
@@ -21,13 +21,13 @@ pub struct Settings {
 }
 
 #[derive(Deserialize)]
-pub struct AskmeFile {
+pub struct AskmeSet {
     pub title: String,            // Question title
     pub subtitle: String,         // Question subtitle
     pub questions: Vec<Question>, // List of questions
 }
 
-pub fn parse_file(filename: &str) -> Result<AskmeFile, String> {
+pub fn parse_file(filename: &str) -> Result<AskmeSet, String> {
     let yaml_file = match fs::read_to_string(filename) {
         Ok(file) => file,
         Err(e) => return Err(format!("failed to read the file to a string: {}", e)),
