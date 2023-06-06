@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-fn main() {
-    todo!()
+use crate::prelude::*;
+
+pub trait AskmeRunnable<S> {
+    fn get_title(&self) -> String;
+    fn get_subtitle(&self) -> String;
+    fn new(set: AskmeSet, settings: AskmeSettings) -> Self;
+    fn run(&mut self) -> Result<S, &str>;
+}
+
+pub trait FromFile {
+    fn from_file(file_name: &str) -> Result<AskmeSet, String>;
 }

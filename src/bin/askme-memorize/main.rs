@@ -1,7 +1,23 @@
+// Copyright 2023 Eason Qin <eason@ezntek.com> and Cikitta Tjok <daringcuteseal@gmail.com>.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+use askme::prelude::*;
+use askme::print_correct_answers;
+
 mod app;
 
 use app::App;
-use askme::{print_correct_answers, AskmeSettings};
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -57,15 +73,19 @@ impl From<Args> for AskmeSettings {
 fn main() {
     let args = Args::parse();
 
-    let mut app = match App::from_file(&args.filename.clone(), args.into()) {
-        Ok(a) => a,
+    let set = match AskmeSet::from_file(&args.filename) {
+        Ok(s) => s,
         Err(e) => panic!("error: {}", e),
     };
+
+    let set_questions = set.questions.len();
+
+    let mut app = App::new(set, AskmeSettings::from(args));
 
     let correct_count = match app.run() {
         Ok(c) => c,
         Err(e) => panic!("error: {}", e),
     };
 
-    print_correct_answers(correct_count, app.askme_file.questions.len());
+    print_correct_answers(correct_count, set_questions);
 }
