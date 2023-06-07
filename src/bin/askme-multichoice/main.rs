@@ -38,8 +38,11 @@ impl App {
         let columns = 2;
         let mut answers = question.answers.clone();
 
-        let mut _offset = 0;
-
+        let mut _offset: usize = 0;
+        
+        // print a newline to buffer things out
+        println!("\n");
+        
         while !answers.is_empty() {
             let mut curr_col: Vec<String> = Vec::new();
             for _ in 0..columns {
@@ -53,7 +56,7 @@ impl App {
             let curr_col_string = curr_col
                 .into_iter()
                 .enumerate()
-                .map(|(ans_idx, curr_ans)| format!("{}. {}", MCQ_LETTERS[ans_idx], curr_ans))
+                .map(|(ans_idx, curr_ans)| format!("{}. {}", MCQ_LETTERS[ans_idx+_offset], curr_ans))
                 .collect::<Vec<String>>()
                 .join("    ");
 
