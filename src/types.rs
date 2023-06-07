@@ -38,7 +38,7 @@ pub struct AskmeSet {
     pub questions: Vec<Question>, // List of questions
 }
 
-impl FromFile for AskmeSet {
+impl FromSetFile for AskmeSet {
     fn from_file(file_name: &str) -> Result<AskmeSet, String> {
         let yaml_file = match fs::read_to_string(file_name) {
             Ok(file) => file,

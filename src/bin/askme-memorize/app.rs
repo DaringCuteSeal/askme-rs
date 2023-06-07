@@ -16,7 +16,6 @@ use askme::prelude::*;
 use askme::{get_input, shuffle_arr, wait_for};
 use colored::Colorize;
 use figlet_rs::FIGfont;
-use rand::rngs::ThreadRng;
 
 const CORRECT_FEEDBACK_STR: &str = "✔️ That's correct!";
 const INCORRECT_FEEDBACK_STR: &str = "❌ Not quite correct..";
@@ -25,7 +24,6 @@ pub struct App {
     set: AskmeSet,
     settings: AskmeSettings,
     correct_count: i32,
-    rng: ThreadRng,
 }
 
 impl App {
@@ -91,25 +89,12 @@ impl App {
 
         wait_for(self.settings.wait_duration);
     }
-
-    fn run_set(&mut self) {
-        let mut qns = self.set.questions.clone();
-
-        if self.settings.shuffle {
-            qns = shuffle_arr(&qns);
-        }
-
-        for question in qns.iter() {
-            self.ask_question(question)
-        }
-    }
 }
 
-impl AskmeRunnable<i32> for App {
+impl AskmeMode<i32> for App {
     fn new(set: AskmeSet, settings: AskmeSettings) -> Self {
         App {
             correct_count: 0,
-            rng: rand::thread_rng(),
             set,
             settings,
         }
@@ -124,6 +109,18 @@ impl AskmeRunnable<i32> for App {
 
     fn get_subtitle(&self) -> String {
         format!(" {}\n", self.set.subtitle.blue())
+    }
+
+    fn run_set(&mut self) {
+        let mut qns = self.set.questions.clone();
+
+        if self.settings.shuffle {
+            qns = shuffle_arr(&qns);
+        }
+
+        for question in qns.iter() {
+            self.ask_question(question)
+        }
     }
 
     fn run(&mut self) -> Result<i32, &str> {

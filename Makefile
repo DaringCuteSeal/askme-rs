@@ -1,5 +1,6 @@
-all: add_localbin_to_path build
-	cp -i target/release/askme-* $(HOME)/.local/bin/
+export PATH := $(HOME)/.local/bin:$(PATH)
+
+all: make_localbin build install
 
 install:
 	cp -i target/release/askme-* $(HOME)/.local/bin/
@@ -7,17 +8,17 @@ install:
 build:
 	cargo build --release
 
-add_localbin_to_path:
+make_localbin:
 	$(shell if [[ ! -d "$(HOME)/.local/bin/" ]]; then \
 		mkdir $(HOME)/.local/bin; \
 	fi)
 
-	$(shell export PATH="$PATH:$HOME/.local/bin")
-	@echo "$(HOME)/.local/bin was added to the PATH in this session."
-	@echo "to make this change global, please do so in you shell's rc."
-
 clean:
-	rm -rvf target/release;
+	for dir in target/release target/debug ; do \
+        if [ -d "$dir" ]; then \
+            rm "$$dir" || exit 1; \
+        fi \
+    done
 
 uninstall:
 	rm $(HOME)/.local/bin/askme-*;

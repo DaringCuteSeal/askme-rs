@@ -14,13 +14,14 @@
 
 use crate::prelude::*;
 
-pub trait AskmeRunnable<S> {
+pub trait AskmeMode<R> {
     fn get_title(&self) -> String;
     fn get_subtitle(&self) -> String;
     fn new(set: AskmeSet, settings: AskmeSettings) -> Self;
-    fn run(&mut self) -> Result<S, &str>;
+    fn run_set(&mut self);
+    fn run(&mut self) -> Result<R, &str>;
 }
 
-pub trait FromFile {
+pub trait FromSetFile {
     fn from_file(file_name: &str) -> Result<AskmeSet, String>;
 }
