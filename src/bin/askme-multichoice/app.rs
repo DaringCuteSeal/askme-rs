@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use askme::{prelude::*, wait_for};
+use askme::{prelude::*, print_warning, wait_for};
 use colored::Colorize;
 use figlet_rs::FIGfont;
 use rand::Rng;
@@ -27,9 +27,9 @@ static MCQ_LETTERS: [char; 26] = [
 
 pub struct AskmeSettings {
     pub loop_questions: bool,
-    pub case_sensitive: bool,
     pub show_correct: bool,
     pub wait_duration: f64,
+    pub max_choices: usize,
 }
 
 pub struct App {
@@ -47,8 +47,21 @@ impl App {
         &self,
         curr_question: &Question,
         questions: &[Question],
-        len: usize,
+        mut len: usize,
     ) -> (Vec<String>, usize) {
+        let mut choices_len = 0;
+        for ele in questions {
+            choices_len += ele.answers.len();
+        }
+
+        if choices_len < len {
+            print_warning(&format!(
+                "Not enough answers to aggregate! Reducing maximum choices to {}",
+                choices_len
+            ));
+            len = choices_len
+        }
+
         let mut rng = rand::thread_rng();
 
         // Tuple of question idx and answer idx
@@ -56,7 +69,6 @@ impl App {
 
         let correct_answer = &curr_question.answers[rng.gen_range(0..curr_question.answers.len())];
 
-        // FIXME: if the len is greater than the amount of available choices then this code won't work.
         let mut wrong_answers = (0..len - 1)
             .map(|_| loop {
                 let idx = rng.gen_range(0..questions.len());
@@ -156,12 +168,13 @@ impl App {
     pub fn ask_question(&mut self, question: &Question) {
         println!("{}", question.title);
 
-        let available_answers = self.aggregate_answers(question, &self.set.questions, 4);
+        let available_answers =
+            self.aggregate_answers(question, &self.set.questions, self.settings.max_choices);
 
         println!("{}", self.get_question_choices(&available_answers.0));
 
         let user_answer_idx = loop {
-            let input = askme::get_input();
+            let input = askme::get_input().to_ascii_lowercase();
             let first_char = input.chars().collect::<Vec<char>>()[0];
 
             let ans_idx = MCQ_LETTERS.binary_search(&first_char).unwrap_or(0);

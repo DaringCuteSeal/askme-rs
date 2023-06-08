@@ -60,3 +60,15 @@ pub fn print_correct_answers(correct_count: i32, questions_total: usize) {
         format!("Correct answers: {}/{}", correct_count, questions_total,).bright_purple()
     )
 }
+
+pub fn print_warning(msg: &str) {
+    println!("{} {}", "[!] warning:".bold(), msg.yellow());
+}
+
+pub fn print_err(msg: &str) {
+    println!("{} {}", "[!!] error:".red(), msg);
+}
+
+pub fn print_info(msg: &str) {
+    println!("[i] info: {}", msg.bold())
+}

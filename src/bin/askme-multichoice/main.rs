@@ -43,9 +43,10 @@ struct Args {
     #[arg(
         long,
         short = 'C',
-        help = "Make answers to the questions case-sensitive"
+        help = "Maximum choices for each question",
+        default_value_t = 4
     )]
-    case_sensitive: bool,
+    max_choices: usize,
 
     #[arg(
         long,
@@ -59,9 +60,9 @@ impl From<Args> for app::AskmeSettings {
     fn from(val: Args) -> Self {
         app::AskmeSettings {
             loop_questions: val.loop_questions,
-            case_sensitive: val.case_sensitive,
             show_correct: val.show_correct,
             wait_duration: val.wait_duration,
+            max_choices: val.max_choices,
         }
     }
 }
