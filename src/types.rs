@@ -12,23 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::prelude::*;
-
 use serde::Deserialize;
 use std::fs;
+
+use crate::prelude::FromSetFile;
 
 #[derive(Deserialize, Clone)]
 pub struct Question {
     pub title: String,        // Question title
     pub answers: Vec<String>, // List of answers
-}
-
-pub struct AskmeSettings {
-    pub shuffle: bool,
-    pub loop_questions: bool,
-    pub case_sensitive: bool,
-    pub show_correct: bool,
-    pub wait_duration: f64,
 }
 
 #[derive(Deserialize)]

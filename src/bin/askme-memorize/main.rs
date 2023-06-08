@@ -58,9 +58,9 @@ struct Args {
     show_correct: bool,
 }
 
-impl From<Args> for AskmeSettings {
+impl From<Args> for app::AskmeSettings {
     fn from(val: Args) -> Self {
-        AskmeSettings {
+        app::AskmeSettings {
             shuffle: val.shuffle,
             loop_questions: val.loop_questions,
             case_sensitive: val.case_sensitive,
@@ -80,7 +80,7 @@ fn main() {
 
     let set_questions = set.questions.len();
 
-    let mut app = App::new(set, AskmeSettings::from(args));
+    let mut app = App::new(set, app::AskmeSettings::from(args));
 
     let correct_count = match app.run() {
         Ok(c) => c,

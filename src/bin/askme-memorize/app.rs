@@ -20,6 +20,14 @@ use figlet_rs::FIGfont;
 const CORRECT_FEEDBACK_STR: &str = "✔️ That's correct!";
 const INCORRECT_FEEDBACK_STR: &str = "❌ Not quite correct..";
 
+pub struct AskmeSettings {
+    pub shuffle: bool,
+    pub loop_questions: bool,
+    pub case_sensitive: bool,
+    pub show_correct: bool,
+    pub wait_duration: f64,
+}
+
 pub struct App {
     set: AskmeSet,
     settings: AskmeSettings,
@@ -91,7 +99,7 @@ impl App {
     }
 }
 
-impl AskmeMode<i32> for App {
+impl AskmeMode<AskmeSettings, i32> for App {
     fn new(set: AskmeSet, settings: AskmeSettings) -> Self {
         App {
             correct_count: 0,
