@@ -20,7 +20,7 @@ use figlet_rs::FIGfont;
 const CORRECT_FEEDBACK_STR: &str = "✔️ That's correct!";
 const INCORRECT_FEEDBACK_STR: &str = "❌ Not quite correct..";
 
-pub struct AskmeSettings {
+pub struct Settings {
     pub shuffle: bool,
     pub loop_questions: bool,
     pub case_sensitive: bool,
@@ -30,7 +30,7 @@ pub struct AskmeSettings {
 
 pub struct App {
     set: AskmeSet,
-    settings: AskmeSettings,
+    settings: Settings,
     correct_count: i32,
 }
 
@@ -65,42 +65,10 @@ impl App {
         let ans_text = answers.join(", ");
         println!("{}{}", "The Correct answers are: ".bold(), ans_text);
     }
-
-    pub fn provide_qn_feedback(&self, question: &Question, correct: bool) {
-        match correct {
-            true => println!("{}\n", CORRECT_FEEDBACK_STR.green()),
-            false => {
-                println!("{}\n", INCORRECT_FEEDBACK_STR.red());
-
-                if self.settings.show_correct {
-                    self.print_question_answers(question);
-                }
-            }
-        };
-    }
-
-    pub fn ask_question(&mut self, question: &Question) {
-        println!("{}", question.title);
-
-        let user_answer = match self.settings.case_sensitive {
-            true => get_input(),
-            false => get_input().to_lowercase(),
-        };
-
-        let correct = self.check_answer(question, user_answer);
-        self.provide_qn_feedback(question, correct);
-
-        match correct {
-            true => self.correct_count += 1,
-            false => (),
-        };
-
-        wait_for(self.settings.wait_duration);
-    }
 }
 
-impl AskmeMode<AskmeSettings, i32> for App {
-    fn new(set: AskmeSet, settings: AskmeSettings) -> Self {
+impl AskmeMode<Settings, i32> for App {
+    fn new(set: AskmeSet, settings: Settings) -> Self {
         App {
             correct_count: 0,
             set,
@@ -147,5 +115,39 @@ impl AskmeMode<AskmeSettings, i32> for App {
         }
 
         Ok(self.correct_count)
+    }
+}
+
+impl AskmeCliMode for App {
+    fn provide_qn_feedback(&self, question: &Question, correct: bool) {
+        match correct {
+            true => println!("{}\n", CORRECT_FEEDBACK_STR.green()),
+            false => {
+                println!("{}\n", INCORRECT_FEEDBACK_STR.red());
+
+                if self.settings.show_correct {
+                    self.print_question_answers(question);
+                }
+            }
+        };
+    }
+
+    fn ask_question(&mut self, question: &Question) {
+        println!("{}", question.title);
+
+        let user_answer = match self.settings.case_sensitive {
+            true => get_input(),
+            false => get_input().to_lowercase(),
+        };
+
+        let correct = self.check_answer(question, user_answer);
+        self.provide_qn_feedback(question, correct);
+
+        match correct {
+            true => self.correct_count += 1,
+            false => (),
+        };
+
+        wait_for(self.settings.wait_duration);
     }
 }

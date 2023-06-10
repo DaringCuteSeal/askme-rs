@@ -25,7 +25,7 @@ static MCQ_LETTERS: [char; 26] = [
     't', 'u', 'v', 'w', 'x', 'y', 'z',
 ];
 
-pub struct AskmeSettings {
+pub struct Settings {
     pub loop_questions: bool,
     pub show_correct: bool,
     pub wait_duration: f64,
@@ -34,7 +34,7 @@ pub struct AskmeSettings {
 
 pub struct App {
     set: AskmeSet,
-    settings: AskmeSettings,
+    settings: Settings,
     correct_count: i32,
 }
 
@@ -144,58 +144,10 @@ impl App {
 
         retval
     }
-
-    pub fn provide_qn_feedback(&self, correct: bool, correct_choice_index: usize) {
-        match correct {
-            true => println!("{}\n", CORRECT_FEEDBACK_STR.green()),
-            false => {
-                println!("{}\n", INCORRECT_FEEDBACK_STR.red());
-
-                if self.settings.show_correct {
-                    println!(
-                        "{}",
-                        format!(
-                            "The correct option is: {}",
-                            MCQ_LETTERS[correct_choice_index].to_string().bold() // place the letter inside
-                        )
-                        .red()
-                    )
-                }
-            }
-        }
-    }
-
-    pub fn ask_question(&mut self, question: &Question) {
-        println!("{}", question.title);
-
-        let available_answers =
-            self.aggregate_answers(question, &self.set.questions, self.settings.max_choices);
-
-        println!("{}", self.get_question_choices(&available_answers.0));
-
-        let user_answer_idx = loop {
-            let input = askme::get_input().to_ascii_lowercase();
-            let first_char = input.chars().collect::<Vec<char>>()[0];
-
-            let ans_idx = MCQ_LETTERS.binary_search(&first_char).unwrap_or(0);
-
-            let valid_chars = (0..4).map(|i| MCQ_LETTERS[i]).collect::<Vec<char>>();
-
-            if valid_chars.contains(&first_char) {
-                break ans_idx;
-            }
-        };
-
-        let is_correct =
-            available_answers.0[available_answers.1] == available_answers.0[user_answer_idx];
-
-        self.provide_qn_feedback(is_correct, available_answers.1);
-        wait_for(self.settings.wait_duration);
-    }
 }
 
-impl AskmeMode<AskmeSettings, i32> for App {
-    fn new(set: AskmeSet, settings: AskmeSettings) -> Self {
+impl AskmeMode<Settings, i32> for App {
+    fn new(set: AskmeSet, settings: Settings) -> Self {
         App {
             correct_count: 0,
             set,
@@ -238,5 +190,55 @@ impl AskmeMode<AskmeSettings, i32> for App {
         }
 
         Ok(self.correct_count)
+    }
+}
+
+impl AskmeCliMode for App {
+    fn provide_qn_feedback(&self, correct: bool, correct_choice_index: usize) {
+        match correct {
+            true => println!("{}\n", CORRECT_FEEDBACK_STR.green()),
+            false => {
+                println!("{}\n", INCORRECT_FEEDBACK_STR.red());
+
+                if self.settings.show_correct {
+                    println!(
+                        "{}",
+                        format!(
+                            "The correct option is: {}",
+                            MCQ_LETTERS[correct_choice_index].to_string().bold() // place the letter inside
+                        )
+                        .red()
+                    )
+                }
+            }
+        }
+    }
+
+    fn ask_question(&mut self, question: &Question) {
+        println!("{}", question.title);
+
+        let available_answers =
+            self.aggregate_answers(question, &self.set.questions, self.settings.max_choices);
+
+        println!("{}", self.get_question_choices(&available_answers.0));
+
+        let user_answer_idx = loop {
+            let input = askme::get_input().to_ascii_lowercase();
+            let first_char = input.chars().collect::<Vec<char>>()[0];
+
+            let ans_idx = MCQ_LETTERS.binary_search(&first_char).unwrap_or(0);
+
+            let valid_chars = (0..4).map(|i| MCQ_LETTERS[i]).collect::<Vec<char>>();
+
+            if valid_chars.contains(&first_char) {
+                break ans_idx;
+            }
+        };
+
+        let is_correct =
+            available_answers.0[available_answers.1] == available_answers.0[user_answer_idx];
+
+        self.provide_qn_feedback(is_correct, available_answers.1);
+        wait_for(self.settings.wait_duration);
     }
 }

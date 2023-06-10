@@ -12,8 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod app;
+use askme::prelude::*;
+use colored::Colorize;
+use figlet_rs::FIGfont;
 
-fn main() {
-    todo!()
+pub struct Settings {
+    pub shuffle: bool,
+    pub show_correct: bool,
+    pub wait_duration: f64,
+    pub loop_questions: bool,
 }
+
+pub struct App {}

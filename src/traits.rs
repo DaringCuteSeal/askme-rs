@@ -14,10 +14,15 @@
 
 use crate::prelude::*;
 
-pub trait AskmeMode<T, R> {
+pub trait AskmeCliMode {
+    fn ask_question(&self, question: &Question);
+    fn provide_qn_feedback(&self, question: &Question, correct: bool);
+}
+
+pub trait AskmeMode<S, R> {
     fn get_title(&self) -> String;
     fn get_subtitle(&self) -> String;
-    fn new(set: AskmeSet, settings: T) -> Self;
+    fn new(set: AskmeSet, settings: S) -> Self;
     fn run_set(&mut self);
     fn run(&mut self) -> Result<R, &str>;
 }

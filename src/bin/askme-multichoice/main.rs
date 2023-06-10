@@ -56,9 +56,9 @@ struct Args {
     show_correct: bool,
 }
 
-impl From<Args> for app::AskmeSettings {
+impl From<Args> for app::Settings {
     fn from(val: Args) -> Self {
-        app::AskmeSettings {
+        app::Settings {
             loop_questions: val.loop_questions,
             show_correct: val.show_correct,
             wait_duration: val.wait_duration,
@@ -77,7 +77,7 @@ fn main() {
 
     let set_questions = set.questions.len();
 
-    let mut app = App::new(set, app::AskmeSettings::from(args));
+    let mut app = App::new(set, app::Settings::from(args));
 
     let correct_count = match app.run() {
         Ok(c) => c,
