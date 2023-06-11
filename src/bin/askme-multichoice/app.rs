@@ -39,10 +39,6 @@ pub struct App {
 }
 
 impl App {
-    pub fn check_for_empty_questions(&self) -> bool {
-        self.set.questions.is_empty()
-    }
-
     pub fn aggregate_answers(
         &self,
         curr_question: &Question,
@@ -169,13 +165,13 @@ impl AskmeMode<Settings, i32> for App {
     fn run_set(&mut self) {
         let qns = self.set.questions.clone();
 
-        for question in qns.iter() {
-            self.ask_question(question)
+        for question in qns {
+            self.ask_question(&question)
         }
     }
 
     fn run(&mut self) -> Result<i32, &str> {
-        if self.check_for_empty_questions() {
+        if self.set.questions.is_empty() {
             return Err("no questions provided!");
         };
 

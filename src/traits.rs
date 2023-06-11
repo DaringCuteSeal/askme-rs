@@ -15,7 +15,7 @@
 use crate::prelude::*;
 
 pub trait AskmeCliMode {
-    fn ask_question(&self, question: &Question);
+    fn ask_question(&mut self, question: &Question);
     fn provide_qn_feedback(&self, question: &Question, correct: bool);
 }
 

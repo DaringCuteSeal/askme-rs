@@ -35,10 +35,6 @@ pub struct App {
 }
 
 impl App {
-    pub fn check_for_empty_questions(&self) -> bool {
-        self.set.questions.is_empty()
-    }
-
     fn check_answer(&self, question: &Question, user_answer: String) -> bool {
         match self.settings.case_sensitive {
             true => question.answers.contains(&user_answer.trim().to_string()),
@@ -94,13 +90,13 @@ impl AskmeMode<Settings, i32> for App {
             qns = shuffle_arr(&qns);
         }
 
-        for question in qns.iter() {
-            self.ask_question(question)
+        for question in qns {
+            self.ask_question(&question)
         }
     }
 
     fn run(&mut self) -> Result<i32, &str> {
-        if self.check_for_empty_questions() {
+        if self.set.questions.is_empty() {
             return Err("no questions provided!");
         };
 
