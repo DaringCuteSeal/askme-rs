@@ -24,6 +24,7 @@ pub struct Settings {
     pub shuffle: bool,
     pub wait_duration: f64,
     pub loop_questions: bool,
+    pub show_correct: bool,
 }
 
 pub struct App {
