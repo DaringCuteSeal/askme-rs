@@ -1,4 +1,22 @@
+.PHONY: clean
+
+CLEAN_DIRNAMES := target/debug target/release
+CLEAN_DIRS := $(strip $(foreach dir,$(CLEAN_DIRNAMES),$(wildcard $(dir))))
+
 export PATH := $(HOME)/.local/bin:$(PATH)
+
+# fix for missing headers
+# (assumes that the headers were installed via brew)
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	ifeq ($(PROCESSOR_ARCHITECTURE),x86_64)
+		export CPATH := /usr/local/include
+		export LIBRARY_PATH := /usr/local/lib
+	else ifeq ($(PROCESSOR_ARCHITECTURE),arm64)
+		export CPATH := /opt/homebrew/include
+		export LIBRARY_PATH := /opt/homebrew/lib
+	endif
+endif
 
 all: make_localbin build install
 
@@ -10,16 +28,12 @@ build:
 	cargo build --release
 
 make_localbin:
-	$(shell if [[ ! -d "$(HOME)/.local/bin/" ]]; then \
-		mkdir $(HOME)/.local/bin; \
-	fi)
+	[ -d $(HOME)/.local/bin ] || mkdir -p $(HOME)/.local/bin
 
-clean:
-	for dir in target/release target/debug ; do \
-        if [ -d "$dir" ]; then \
-            rm "$$dir" || exit 1; \
-        fi \
-    done
+clean: 
+ifneq (,$(CLEAN_DIRS))
+	rm -rv $(CLEAN_DIRS)
+endif
 
 uninstall:
-	rm $(HOME)/.local/bin/askme-*;
+	
