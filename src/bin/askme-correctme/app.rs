@@ -22,7 +22,6 @@ const INCORRECT_FEEDBACK_STR: &str = "❌ Not quite correct..";
 
 pub struct Settings {
     pub shuffle: bool,
-    pub show_correct: bool,
     pub wait_duration: f64,
     pub loop_questions: bool,
 }
