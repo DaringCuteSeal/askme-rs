@@ -14,11 +14,6 @@
 
 use crate::prelude::*;
 
-pub trait AskmeCliMode {
-    fn ask_question(&self, question: &Question);
-    fn provide_qn_feedback(&self, question: &Question, correct: bool);
-}
-
 pub trait AskmeMode<S, R> {
     fn get_title(&self) -> String;
     fn get_subtitle(&self) -> String;

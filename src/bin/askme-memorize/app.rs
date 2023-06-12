@@ -35,10 +35,6 @@ pub struct App {
 }
 
 impl App {
-    pub fn check_for_empty_questions(&self) -> bool {
-        self.set.questions.is_empty()
-    }
-
     fn check_answer(&self, question: &Question, user_answer: String) -> bool {
         match self.settings.case_sensitive {
             true => question.answers.contains(&user_answer.trim().to_string()),
@@ -65,60 +61,7 @@ impl App {
         let ans_text = answers.join(", ");
         println!("{}{}", "The Correct answers are: ".bold(), ans_text);
     }
-}
 
-impl AskmeMode<Settings, i32> for App {
-    fn new(set: AskmeSet, settings: Settings) -> Self {
-        App {
-            correct_count: 0,
-            set,
-            settings,
-        }
-    }
-
-    fn get_title(&self) -> String {
-        let font = FIGfont::standard().unwrap();
-        let title_text = font.convert(&self.set.title).unwrap().to_string().cyan();
-
-        format!("{}", title_text)
-    }
-
-    fn get_subtitle(&self) -> String {
-        format!(" {}\n", self.set.subtitle.blue())
-    }
-
-    fn run_set(&mut self) {
-        let mut qns = self.set.questions.clone();
-
-        if self.settings.shuffle {
-            qns = shuffle_arr(&qns);
-        }
-
-        for question in qns.iter() {
-            self.ask_question(question)
-        }
-    }
-
-    fn run(&mut self) -> Result<i32, &str> {
-        if self.check_for_empty_questions() {
-            return Err("no questions provided!");
-        };
-
-        println!("{}", self.get_title());
-        println!("{}", self.get_subtitle());
-
-        match self.settings.loop_questions {
-            true => loop {
-                self.run_set()
-            },
-            false => self.run_set(),
-        }
-
-        Ok(self.correct_count)
-    }
-}
-
-impl AskmeCliMode for App {
     fn provide_qn_feedback(&self, question: &Question, correct: bool) {
         match correct {
             true => println!("{}\n", CORRECT_FEEDBACK_STR.green()),
@@ -149,5 +92,55 @@ impl AskmeCliMode for App {
         };
 
         wait_for(self.settings.wait_duration);
+    }
+}
+
+impl AskmeMode<Settings, i32> for App {
+    fn new(set: AskmeSet, settings: Settings) -> Self {
+        App {
+            correct_count: 0,
+            set,
+            settings,
+        }
+    }
+
+    fn get_title(&self) -> String {
+        let font = FIGfont::standard().unwrap();
+        font.convert(&self.set.title)
+            .unwrap()
+            .to_string()
+            .cyan()
+            .to_string()
+    }
+
+    fn get_subtitle(&self) -> String {
+        format!(" {}\n", self.set.subtitle.blue())
+    }
+
+    fn run_set(&mut self) {
+        let qns = match self.settings.shuffle {
+            false => self.set.questions.clone(),
+            true => shuffle_arr(&self.set.questions.clone()),
+        };
+
+        qns.iter().for_each(|question| self.ask_question(question));
+    }
+
+    fn run(&mut self) -> Result<i32, &str> {
+        if self.set.questions.is_empty() {
+            return Err("no questions provided!");
+        };
+
+        println!("{}", self.get_title());
+        println!("{}", self.get_subtitle());
+
+        match self.settings.loop_questions {
+            true => loop {
+                self.run_set()
+            },
+            false => self.run_set(),
+        }
+
+        Ok(self.correct_count)
     }
 }

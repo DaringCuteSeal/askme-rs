@@ -3,7 +3,8 @@ export PATH := $(HOME)/.local/bin:$(PATH)
 all: make_localbin build install
 
 install:
-	cp -i target/release/askme-* $(HOME)/.local/bin/
+	cp target/release/askme-* $(HOME)/.local/bin/
+	rm -f $(HOME)/.local/bin/askme-*.d
 
 build:
 	cargo build --release

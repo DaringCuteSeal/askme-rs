@@ -39,10 +39,6 @@ pub struct App {
 }
 
 impl App {
-    pub fn check_for_empty_questions(&self) -> bool {
-        self.set.questions.is_empty()
-    }
-
     pub fn aggregate_answers(
         &self,
         curr_question: &Question,
@@ -83,7 +79,7 @@ impl App {
             })
             .collect::<Vec<String>>();
 
-        let correct_answer_location = rng.gen_range(0..len - 1);
+        let correct_answer_location = rng.gen_range(0..len);
 
         let curr_question_correct_answer_location = rng.gen_range(0..curr_question.answers.len());
 
@@ -129,7 +125,7 @@ impl App {
                     format!("{}. {}", MCQ_LETTERS[ans_idx + _offset], curr_ans)
                 })
                 .collect::<Vec<String>>()
-                .join("    "); // space things out a bit; TODO: make the spacing actually a bit more consistent
+                .join("\t"); // space things out a bit; TODO: make the spacing actually a bit more consistent
 
             retval += &format!("{}\n", curr_col_string.as_str());
 
@@ -143,6 +139,58 @@ impl App {
         }
 
         retval
+    }
+
+    pub fn provide_qn_feedback(&self, correct: bool, correct_choice_index: usize) {
+        match correct {
+            true => println!("{}\n", CORRECT_FEEDBACK_STR.green()),
+            false => {
+                println!("{}\n", INCORRECT_FEEDBACK_STR.red());
+
+                if self.settings.show_correct {
+                    println!(
+                        "{}",
+                        format!(
+                            "The correct option is: {}",
+                            MCQ_LETTERS[correct_choice_index].to_string().bold() // place the letter inside
+                        )
+                        .red()
+                    )
+                }
+            }
+        }
+    }
+
+    pub fn ask_question(&mut self, question: &Question) {
+        println!("{}", question.title);
+
+        let available_answers =
+            self.aggregate_answers(question, &self.set.questions, self.settings.max_choices);
+
+        println!("{}", self.get_question_choices(&available_answers.0));
+
+        let user_answer_idx = loop {
+            let input = askme::get_input().to_ascii_lowercase();
+            let first_char = input.chars().collect::<Vec<char>>()[0];
+
+            let ans_idx = MCQ_LETTERS.binary_search(&first_char).unwrap_or(0);
+
+            let valid_chars = (0..4).map(|i| MCQ_LETTERS[i]).collect::<Vec<char>>();
+
+            if valid_chars.contains(&first_char) {
+                break ans_idx;
+            }
+        };
+
+        let is_correct =
+            available_answers.0[available_answers.1] == available_answers.0[user_answer_idx];
+
+        if is_correct {
+            self.correct_count += 1;
+        }
+
+        self.provide_qn_feedback(is_correct, available_answers.1);
+        wait_for(self.settings.wait_duration);
     }
 }
 
@@ -169,13 +217,11 @@ impl AskmeMode<Settings, i32> for App {
     fn run_set(&mut self) {
         let qns = self.set.questions.clone();
 
-        for question in qns.iter() {
-            self.ask_question(question)
-        }
+        qns.iter().for_each(|question| self.ask_question(question));
     }
 
     fn run(&mut self) -> Result<i32, &str> {
-        if self.check_for_empty_questions() {
+        if self.set.questions.is_empty() {
             return Err("no questions provided!");
         };
 
@@ -190,55 +236,5 @@ impl AskmeMode<Settings, i32> for App {
         }
 
         Ok(self.correct_count)
-    }
-}
-
-impl AskmeCliMode for App {
-    fn provide_qn_feedback(&self, correct: bool, correct_choice_index: usize) {
-        match correct {
-            true => println!("{}\n", CORRECT_FEEDBACK_STR.green()),
-            false => {
-                println!("{}\n", INCORRECT_FEEDBACK_STR.red());
-
-                if self.settings.show_correct {
-                    println!(
-                        "{}",
-                        format!(
-                            "The correct option is: {}",
-                            MCQ_LETTERS[correct_choice_index].to_string().bold() // place the letter inside
-                        )
-                        .red()
-                    )
-                }
-            }
-        }
-    }
-
-    fn ask_question(&mut self, question: &Question) {
-        println!("{}", question.title);
-
-        let available_answers =
-            self.aggregate_answers(question, &self.set.questions, self.settings.max_choices);
-
-        println!("{}", self.get_question_choices(&available_answers.0));
-
-        let user_answer_idx = loop {
-            let input = askme::get_input().to_ascii_lowercase();
-            let first_char = input.chars().collect::<Vec<char>>()[0];
-
-            let ans_idx = MCQ_LETTERS.binary_search(&first_char).unwrap_or(0);
-
-            let valid_chars = (0..4).map(|i| MCQ_LETTERS[i]).collect::<Vec<char>>();
-
-            if valid_chars.contains(&first_char) {
-                break ans_idx;
-            }
-        };
-
-        let is_correct =
-            available_answers.0[available_answers.1] == available_answers.0[user_answer_idx];
-
-        self.provide_qn_feedback(is_correct, available_answers.1);
-        wait_for(self.settings.wait_duration);
     }
 }

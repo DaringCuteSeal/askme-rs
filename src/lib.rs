@@ -72,3 +72,42 @@ pub fn print_err(msg: &str) {
 pub fn print_info(msg: &str) {
     println!("[i] info: {}", msg.bold())
 }
+
+pub fn get_yn_from_input(text: &str) -> bool {
+    let text_vec = text.to_lowercase().chars().collect::<Vec<char>>();
+
+    // get the full forms
+    if text.to_lowercase().contains("yes") {
+        return true;
+    } else if text.to_lowercase().contains("no") {
+        return false;
+    }
+
+    // get the most common case such as "y" or "n"
+    match text_vec[0] {
+        'y' => return true,
+        'n' => return false,
+        _ => (),
+    }
+
+    // get the first three characters as a string
+    let text_first_three_chars = text_vec[..3].iter().collect::<String>();
+
+    // handle a case such as "noy" or "eno" where no is in the first three
+    // excludes keybord spam such as "wdfylhwfndonoawf"
+    //...........................................^^
+    //
+    if text_first_three_chars.contains("no") {
+        return false;
+    }
+
+    // handle a case such as "eys" where "yes" may be misspelt or
+    // where misinputs caused a few buffer letters, causing something like "eey"
+    //
+    if text_first_three_chars.contains('y') {
+        return true;
+    }
+
+    // return false
+    false
+}
