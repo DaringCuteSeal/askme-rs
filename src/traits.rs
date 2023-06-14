@@ -23,5 +23,5 @@ pub trait AskmeMode<S, R> {
 }
 
 pub trait FromSetFile {
-    fn from_file(file_name: &str) -> Result<AskmeSet, String>;
+    fn from_file(file_name: &str) -> Result<AskmeSet, AskmeError>;
 }

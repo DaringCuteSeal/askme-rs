@@ -15,6 +15,7 @@
 use serde::Deserialize;
 use std::fs;
 
+use crate::prelude::AskmeError;
 use crate::prelude::FromSetFile;
 
 #[derive(Deserialize, Clone)]
@@ -31,15 +32,25 @@ pub struct AskmeSet {
 }
 
 impl FromSetFile for AskmeSet {
-    fn from_file(file_name: &str) -> Result<AskmeSet, String> {
+    fn from_file(file_name: &str) -> Result<AskmeSet, AskmeError> {
         let yaml_file = match fs::read_to_string(file_name) {
             Ok(file) => file,
-            Err(e) => return Err(format!("failed to read the file to a string: {}", e)),
+            Err(e) => {
+                return Err(AskmeError::new(
+                    format!("Failed to read file '{}': {}", file_name, e),
+                    Some(Box::from(e)),
+                ))
+            }
         };
 
         let content: AskmeSet = match serde_yaml::from_str(&yaml_file) {
             Ok(file_struct) => file_struct,
-            Err(e) => return Err(format!("failed to parse the file to an askme file: {}", e)),
+            Err(e) => {
+                return Err(AskmeError::new(
+                    format!("Failed to parse file content: {}", e),
+                    Some(Box::from(e)),
+                ))
+            }
         };
 
         Ok(content)

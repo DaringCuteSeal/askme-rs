@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::Debug;
+use std::process::exit;
+
 use askme::prelude::*;
 use askme::print_correct_answers;
 
 mod app;
 
 use app::App;
+use askme::print_err;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -75,7 +79,10 @@ fn main() {
 
     let set = match AskmeSet::from_file(&args.filename) {
         Ok(s) => s,
-        Err(e) => panic!("error: {}", e),
+        Err(e) => {
+            print_err(&format!("{}", e));
+            exit(1)
+        }
     };
 
     let set_questions = set.questions.len();

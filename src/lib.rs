@@ -17,6 +17,7 @@ use rand::seq::SliceRandom;
 use std::io::{self, Write};
 use std::time::Duration;
 
+pub mod errors;
 pub mod prelude;
 pub mod traits;
 pub mod types;
