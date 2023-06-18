@@ -15,6 +15,7 @@
 use askme::{prelude::*, print_warning, wait_for};
 use colored::Colorize;
 use figlet_rs::FIGfont;
+use inquire::{InquireError, Select};
 use rand::Rng;
 
 const CORRECT_FEEDBACK_STR: &str = "✔️ That's correct!";
@@ -39,6 +40,7 @@ pub struct App {
 }
 
 impl App {
+    /// Randomly generate a list of answers based on the set answers.
     pub fn aggregate_answers(
         &self,
         curr_question: &Question,
@@ -92,55 +94,6 @@ impl App {
         (wrong_answers, correct_answer_location)
     }
 
-    pub fn get_question_choices(&self, list_of_answers: &[String]) -> String {
-        let columns = 2;
-        let mut retval = String::new();
-        let mut answers = list_of_answers.to_owned();
-        answers.reverse();
-
-        let mut _offset = 0;
-
-        while !answers.is_empty() {
-            let mut current_column: Vec<String> = Vec::new();
-
-            // no slicing and copying because space complexity
-            for _ in 0..columns {
-                if let Some(curr_item) = answers.pop() {
-                    current_column.push(curr_item)
-                }
-            }
-
-            // prevent the need to use a moved value later on
-            let curr_col_len = current_column.len();
-
-            let curr_col_string = current_column
-                .into_iter()
-                .enumerate()
-                .map(|(ans_idx, curr_ans)| {
-                    // add the index and offset.
-                    //
-                    // the index does begin from 0, but
-                    // so does the characters, so no need
-                    // to add one.
-                    format!("{}. {}", MCQ_LETTERS[ans_idx + _offset], curr_ans)
-                })
-                .collect::<Vec<String>>()
-                .join("\t"); // space things out a bit; TODO: make the spacing actually a bit more consistent
-
-            retval += &format!("{}\n", curr_col_string.as_str());
-
-            // offset the index of the letters.
-            //
-            // say if a, b, c was used in one column,
-            // 3 would be added to the offset so the
-            // next row would be d, e, f.
-            //
-            _offset += curr_col_len;
-        }
-
-        retval
-    }
-
     pub fn provide_qn_feedback(&self, correct: bool, correct_choice_index: usize) {
         match correct {
             true => println!("{}\n", CORRECT_FEEDBACK_STR.green()),
@@ -162,28 +115,23 @@ impl App {
     }
 
     pub fn ask_question(&mut self, question: &Question) {
-        println!("{}", question.title);
+        println!(" {}", question.title.bold());
 
         let available_answers =
             self.aggregate_answers(question, &self.set.questions, self.settings.max_choices);
 
-        println!("{}", self.get_question_choices(&available_answers.0));
-
-        let user_answer_idx = loop {
-            let input = askme::get_input().to_ascii_lowercase();
-            let first_char = input.chars().collect::<Vec<char>>()[0];
-
-            let ans_idx = MCQ_LETTERS.binary_search(&first_char).unwrap_or(0);
-
-            let valid_chars = (0..4).map(|i| MCQ_LETTERS[i]).collect::<Vec<char>>();
-
-            if valid_chars.contains(&first_char) {
-                break ans_idx;
+        let user_answer = match Select::new("Answer:", available_answers.0.clone()).prompt() {
+            Ok(answer) => answer,
+            Err(err) => {
+                if let InquireError::OperationInterrupted = err {
+                    std::process::exit(1)
+                } else {
+                    panic!("Failed reading from stdin!")
+                }
             }
         };
 
-        let is_correct =
-            available_answers.0[available_answers.1] == available_answers.0[user_answer_idx];
+        let is_correct = available_answers.0[available_answers.1] == user_answer;
 
         if is_correct {
             self.correct_count += 1;

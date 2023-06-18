@@ -72,7 +72,10 @@ fn main() {
 
     let set = match AskmeSet::from_file(&args.filename) {
         Ok(s) => s,
-        Err(e) => panic!("error: {}", e),
+        Err(e) => {
+            askme::print_err(&format!("{}", e));
+            std::process::exit(1)
+        }
     };
 
     let set_questions = set.questions.len();

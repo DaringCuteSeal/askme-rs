@@ -76,7 +76,7 @@ impl App {
     }
 
     fn ask_question(&mut self, question: &Question) {
-        println!("{}", question.title);
+        println!(" {}", question.title.bold());
 
         let user_answer = match self.settings.case_sensitive {
             true => get_input(),

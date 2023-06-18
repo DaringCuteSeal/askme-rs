@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use std::fmt::Debug;
-use std::process::exit;
 
 use askme::prelude::*;
 use askme::print_correct_answers;
@@ -21,7 +20,6 @@ use askme::print_correct_answers;
 mod app;
 
 use app::App;
-use askme::print_err;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -80,8 +78,8 @@ fn main() {
     let set = match AskmeSet::from_file(&args.filename) {
         Ok(s) => s,
         Err(e) => {
-            print_err(&format!("{}", e));
-            exit(1)
+            askme::print_err(&format!("{}", e));
+            std::process::exit(1)
         }
     };
 

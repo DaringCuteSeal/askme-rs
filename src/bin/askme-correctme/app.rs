@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use askme::{get_input, get_yn_from_input, prelude::*};
+use askme::{get_yn_from_input, prelude::*, wait_for};
 use colored::Colorize;
 use figlet_rs::FIGfont;
-use rand::Rng;
+use rand::{seq::SliceRandom, thread_rng, Rng};
 
 const CORRECT_FEEDBACK_STR: &str = "✔️ That's correct!";
 const INCORRECT_FEEDBACK_STR: &str = "❌ Not quite correct..";
@@ -34,24 +34,28 @@ pub struct App {
 }
 
 impl App {
-    fn get_random_answer_from_set(&self, exclude_question_ans: Option<&Question>) -> &String {
-        let answers = &self
-            .set
-            .questions
-            .iter()
-            .filter(|qn| {
-                if let Some(q) = exclude_question_ans {
-                    qn.answers != q.answers
-                } else {
-                    true
-                }
-            })
-            .flat_map(|qn| &qn.answers)
-            .collect::<Vec<&String>>();
-
-        let rand_ans_idx = rand::thread_rng().gen_range(0..answers.len());
-
-        answers[rand_ans_idx]
+    fn get_random_answer_from_set(&self, exclude_question_ans: Option<&Question>) -> String {
+        // If exclude_question_ans is Some, return the answer with random index to that question
+        if let Some(question) = exclude_question_ans {
+            if let Some(ans) = &question.answers.choose(&mut thread_rng()) {
+                ans.to_string()
+            } else {
+                panic!("Failed to get random answer from set!");
+            }
+        } else {
+            // If exclude_question_ans is None, return a random answer from the set
+            let rand_answer = &self
+                .set
+                .questions
+                .iter()
+                .flat_map(|qn| &qn.answers)
+                .collect::<Vec<&String>>();
+            if let Some(ans) = rand_answer.choose(&mut thread_rng()) {
+                ans.to_string()
+            } else {
+                panic!("Failed to get random answer from set!");
+            }
+        }
     }
 
     fn provide_qn_feedback(&self, question: &Question, is_correct: bool) {
@@ -65,14 +69,14 @@ impl App {
                 if self.settings.show_correct {
                     if question.answers.len() == 1 {
                         println!(
-                            "the answer to \"{}\" is \"{}\"!",
+                            "The answer to \"{}\" is \"{}\"!\n",
                             question.title,
                             question.answers.first().unwrap()
                         );
                     } else {
                         let all_correct_answers_string = question.answers.join(", ");
                         println!(
-                            "the answers to \"{}\" are \"{}\"!",
+                            "The answers to \"{}\" are \"{}\"!\n",
                             question.title, all_correct_answers_string
                         );
                     }
@@ -82,22 +86,27 @@ impl App {
     }
 
     fn ask_question(&mut self, question: &Question) {
-        let rand_ans = self.get_random_answer_from_set(Some(question));
+        let rand_ans = match thread_rng().gen_bool(0.5) {
+            true => self.get_random_answer_from_set(Some(question)),
+            false => self.get_random_answer_from_set(None),
+        };
+
         println!(
             "{} (y/n)\n \"{} is {}\"\n",
             "Is this correct?".bold(),
-            question.title,
-            rand_ans
+            question.title.italic().bold(),
+            rand_ans.italic().bold()
         );
 
-        let user_answer = get_yn_from_input(get_input().trim());
-        let is_rand_ans_correct = question.answers.contains(rand_ans) == user_answer;
+        let user_answer = get_yn_from_input();
+        let is_rand_ans_correct = question.answers.contains(&rand_ans) == user_answer;
 
         if is_rand_ans_correct {
             self.correct_count += 1;
         }
 
         self.provide_qn_feedback(question, is_rand_ans_correct);
+        wait_for(self.settings.wait_duration);
     }
 }
 
