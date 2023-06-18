@@ -8,7 +8,10 @@ AskMe is a simple utility to help with memorizing terms, definitions, etc. AskMe
 
 # How it works
 
-AskMe has many modes for you to pick from, currently, only `askme-memorize` is properly implemented, and `askme-multichoice` is currently being implemented. This program will have multiple binaries when installed.
+AskMe has many modes for you to pick from. Currently, it consists of:
+- `askme-memorize`
+- `askme-multichoices`
+- `askme-correctme`
 
 # Usage
 
@@ -47,7 +50,7 @@ make
 ```
 
 # Contributing & To-Do's
-I appreciate contributions! Feel free to fork this repo and make PRs.
+We appreciate contributions! Feel free to fork this repo and make PRs.
 
 To-do's:
 - [ ] Handle INT signal properly (print correct answers on termination)
